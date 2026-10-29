@@ -20,12 +20,16 @@ export function readNight(runsDir: string, night: string): NightDigest | null {
       night,
       rows: [],
       badLines: 0,
+      counts: { ok: 0, retry: 0, fail: 0 },
     };
   }
 
   const lines = content.split('\n');
   const jobs = new Map<string, DigestRow>();
   let badLines = 0;
+  let ok = 0;
+  let retry = 0;
+  let fail = 0;
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
@@ -45,6 +49,10 @@ export function readNight(runsDir: string, night: string): NightDigest | null {
       badLines++;
       continue;
     }
+
+    if (parsed.status === 'ok') ok++;
+    else if (parsed.status === 'retry') retry++;
+    else if (parsed.status === 'fail') fail++;
 
     const jobName = String(parsed.job);
     const existing = jobs.get(jobName);
@@ -80,5 +88,6 @@ export function readNight(runsDir: string, night: string): NightDigest | null {
     night,
     rows: sortedRows,
     badLines,
+    counts: { ok, retry, fail },
   };
 }
